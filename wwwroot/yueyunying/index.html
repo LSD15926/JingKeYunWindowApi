@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>月运营报表</title>
+    <link rel="stylesheet" href="css/elementui.css">
+</head>
+
+<body>
+    <div id="app">
+        <div style="margin-bottom: 20px">
+            <el-date-picker v-model="month" @change="monthChange" type="month" placeholder="选择月">
+        </div>
+        <div id="table">
+            <el-table :data="tableData" style="width: 100%;margin-bottom: 20px;" border default-expand-all
+                @cell-click="cellHandleClick" :span-method="objectSpanMethod" :header-cell-style="tableHeaderCellStyle"
+                :cell-style="setCellStyle">
+                <el-table-column prop="UserName" label="姓名" width="100">
+                </el-table-column>
+                <el-table-column v-for="(item, index) in tableHeaderArray" :key="index" :label="item" width="80"
+                    :prop="'Day'+ index">
+                </el-table-column>
+                <el-table-column prop="Report" label="运营报表" width="100">
+                </el-table-column>
+                <el-table-column prop="All" label="总计" width="80">
+                </el-table-column>
+            </el-table>
+        </div>
+
+    </div>
+    <script src="js/jquery.1.11.3.min.js"></script>
+    <script src="js/vue.js"></script>
+    <script src="js/elementui.js"></script>
+    <script type="text/javascript">
+        const vm = new Vue({
+            el: "#app",
+            data: {
+                tableHeaderArray: [],
+                spanArr: [],
+                hasChildren: true,
+                tableData: [],
+                month: ''
+            },
+            mounted() {
+                this.getList();
+            },
+            methods: {
+                getList() {
+                    if (!this.month) {
+                        this.month = new Date();
+                        this.month.setDate(1);
+                    }
+                    var firstDay = this.month.toLocaleDateString();
+
+                    $.post('https://localhost:5001/Business/OrderStep/TaskUserMonth', {
+                        'time': firstDay
+                    }, res => {
+                        let data = JSON.parse(res)
+                        this.tableData = data.Data
+                        const currentDate = new Date(data.Where);
+                        const currentMonth = currentDate.getMonth();
+                        this.tableHeaderArray = this.getEveryDay(currentMonth);
+
+                        for (let i = 0; i < this.tableData.length; i++) {
+                            for (let j = 0; j < this.tableHeaderArray.length; j++) {
+                                this.tableData[i]['Day' + j] = this.tableData[i]['Days'][j]['Day'];
+                            }
+                            this.tableData[i]['indexs'] = this.tableData[i]['UserId']
+                        }
+
+                        if (this.tableData.length !== 0) {
+                            this.spanArr = [];
+                            let pos = 0;
+                            this.tableData.forEach((item, index) => {
+                                if (index === 0) {
+                                    this.spanArr.push(1)
+                                } else {
+                                    if (item.indexs === this.tableData[index - 1].indexs) {
+                                        this.spanArr[pos] += 1;
+                                        this.spanArr.push(0);
+                                    } else {
+                                        pos = index;
+                                        this.spanArr.push(1);
+                                    }
+                                }
+                            })
+                        }
+
+                    })
+
+
+                },
+                monthChange(val) {
+                    // this.tableHeaderArray = this.getEveryDay(val.getMonth());    
+                    this.getList()
+                },
+                getCountDays(m) {
+                    const currentDate = new Date();
+                    currentDate.setMonth(m + 1);
+                    currentDay = currentDate.getDate();
+                    if (currentDay > 1) {
+                        if (m == new Date().getMonth()) {
+                            currentDate.setDate(currentDay - 1);
+                            return currentDate.getDate();
+                        } else if (m > new Date().getMonth()) { 
+                            return 0;
+                        } else {
+                            currentDate.setDate(0);
+                            return currentDate.getDate();
+                        }
+                    } else {
+                        return 0;
+                    }
+                },
+                getEveryDay(m) {
+                    const dayArray = [];
+                    const month = m + 1;
+                    const day = this.getCountDays(m);
+                    for (let i = 1; i <= day; i++) {
+                        dayArray.push(month + "月" + i + "日");
+                    }
+                    return dayArray;
+                },
+                objectSpanMethod({ row, column, rowIndex, columnIndex }) {
+                    if (columnIndex == this.tableHeaderArray.length + 1) {
+                        if (this.spanArr[rowIndex]) {
+                            return {
+                                rowspan: this.spanArr[rowIndex],
+                                colspan: 1
+                            }
+                        } else {
+                            return {
+                                rowspan: 0,
+                                colspan: 0
+                            }
+                        }
+                    }
+                },
+                setCellStyle({ row, column, rowIndex, columnIndex }) {
+                    let cellStyle = { textAlign: 'center', cursor: 'pointer' };
+                    if (columnIndex == 0) {
+                        cellStyle['color'] = '#00638F';
+                    } else {
+                        let arr = [];
+                      
+                        if (row['Day' + (columnIndex - 1)]) {
+                            arr[columnIndex - 1] = row['Day' + (columnIndex - 1)].split('/');
+                            if (Number(arr[columnIndex - 1][0]) >= Number(arr[columnIndex - 1][1])) {
+                                cellStyle['color'] = '#00B337'
+                            } else {
+                                cellStyle['color'] = '#FF0000'
+                            }
+                        }
+                    }
+                    return cellStyle
+                },
+                tableHeaderCellStyle() {
+                    return { color: '#00638F', textAlign:'center' }
+                },
+                cellHandleClick(row, column, cell, event) {
+                    let year = this.month.getFullYear();
+                    let datetime = year + '年' + column.label;
+                    bound.getName(String(row.UserId), String(datetime))
+                }
+            },
+        })
+    </script>
+</body>
+
+</html>
