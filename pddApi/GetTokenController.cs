@@ -40,7 +40,6 @@ namespace APIOffice.Controllers.pddApi
         [Route("try")]
         public string Try([FromForm] IFormCollection file)
         {
-            string a = "111";
             return file.Files[0].FileName;
         }
     }

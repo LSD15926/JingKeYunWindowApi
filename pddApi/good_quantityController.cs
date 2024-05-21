@@ -13,34 +13,27 @@ namespace APIOffice.Controllers.pddApi
         [Route("Update")]
         public string Update([FromBody] List<requestQuantity> BodyList)
         {
-            List<BackMsg> results = new List<BackMsg>();
-            foreach (var item in BodyList)
+            List<BackMsg> results = new BackMsg[BodyList.Count].ToList();
+            Parallel.For(0, BodyList.Count, i =>
             {
                 BackMsg backMsg = new BackMsg();
-                if (item.goods_id == 0 || item.quantity == 0 || (item.sku_id == 0 && item.outer_id == ""))
-                {
-                    backMsg.Code = 1001;
-                    backMsg.Mess = "参数错误缺少参数。";
-                    results.Add(backMsg);
-                    continue;
-                }
                 //数据正常请求接口
                 Dictionary<string, string> parameters = new Dictionary<string, string>
                 {
                     { "type", "pdd.goods.quantity.update" },
                     { "client_id", apiHelp.client_id },
-                    { "access_token", item.Malls.mall_token },
+                    { "access_token", BodyList[i].Malls.mall_token },
                     { "timestamp", ((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000/1000).ToString() },
                     { "data_type", "JSON" },
-                    { "goods_id", item.goods_id.ToString() },
-                    { "quantity", item.quantity.ToString() },
-                    { "sku_id", item.sku_id.ToString() },
-                    { "outer_id", item.outer_id.ToString() },
-                    { "update_type", item.update_type.ToString() },
+                    { "goods_id", BodyList[i].goods_id.ToString() },
+                    { "quantity", BodyList[i].quantity.ToString() },
+                    { "sku_id", BodyList[i].sku_id.ToString() },
+                    { "outer_id", BodyList[i].outer_id.ToString() },
+                    { "update_type", BodyList[i]    .update_type.ToString() },
                 };
                 backMsg = apiHelp.SendPddApi(parameters);
-                results.Add(backMsg);
-            }
+                results[i] = backMsg;
+            });
 
             var json = JsonConvert.SerializeObject(results);
             return json;
@@ -50,6 +43,6 @@ namespace APIOffice.Controllers.pddApi
     }
 
 
-   
+
 
 }

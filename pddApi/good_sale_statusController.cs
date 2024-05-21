@@ -15,31 +15,6 @@ namespace APIOffice.Controllers.pddApi
         public string Set([FromBody] List<requsetSaleBody> BodyList)
         {
             List<BackMsg> results = new BackMsg[BodyList.Count].ToList();
-            //foreach (var item in BodyList)
-            //{
-            //    BackMsg backMsg = new BackMsg();
-            //    if (item.goods_id == 0 || item.is_onsale == -1 )
-            //    {
-            //        backMsg.Code = 1001;
-            //        backMsg.Mess = "参数错误缺少参数。";
-            //        results.Add(backMsg);
-            //        continue;
-            //    }
-            //    //数据正常请求接口
-            //    Dictionary<string, string> parameters = new Dictionary<string, string>
-            //    {
-            //        { "type", "pdd.goods.sale.status.set" },
-            //        { "client_id", apiHelp.client_id },
-            //        { "access_token", item.Malls.mall_token },
-            //        { "timestamp", ((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000/1000).ToString() },
-            //        { "data_type", "JSON" },
-            //        { "goods_id", item.goods_id.ToString() },
-            //        { "is_onsale", item.is_onsale.ToString() },
-
-            //    };
-            //    backMsg = apiHelp.SendPddApi(parameters);
-            //    results.Add(backMsg);
-            //}
             Parallel.For(0, BodyList.Count, i =>
             {
                 BackMsg backMsg = new BackMsg();
@@ -47,7 +22,7 @@ namespace APIOffice.Controllers.pddApi
                 {
                     backMsg.Code = 1001;
                     backMsg.Mess = "参数错误缺少参数。";
-                    results[i]=backMsg;
+                    results[i] = backMsg;
                 }
                 else
                 {
@@ -64,6 +39,7 @@ namespace APIOffice.Controllers.pddApi
 
                     };
                     backMsg = apiHelp.SendPddApi(parameters);
+
                     results[i] = backMsg;
                 }
 

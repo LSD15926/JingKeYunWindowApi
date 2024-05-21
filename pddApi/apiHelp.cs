@@ -14,7 +14,7 @@ namespace APIOffice.Controllers.pddApi
 {
     public static class apiHelp
     {
-        public static string client_id = "2b0c43de6a3e468fbf748bba48b8ee5a";
+        public static string client_id = "ae44e9ca4a02482eb0c07bb3b8ee8165";
         //public static string access_token = "575b9d9778f046ebae9a9f76c9cf891b81b017f2";
 
         public static string pdduid = "2952916144502";
@@ -73,7 +73,7 @@ namespace APIOffice.Controllers.pddApi
 
 
 
-        public static string postApi(string url, Dictionary<string, string> parameters,int type=0, object bodyData = null)
+        public static string postApi(string url, Dictionary<string, string> parameters, int type = 0, object bodyData = null)
         {
             try
             {
@@ -196,7 +196,19 @@ namespace APIOffice.Controllers.pddApi
                 JToken jToken = JsonConvert.DeserializeObject<JToken>(resultJson);
                 if (jToken.ToString().Contains("error_response"))//存在错误信息跳出
                 {
-                    throw new Exception(jToken["error_response"].ToString());
+
+                    if (!string.IsNullOrEmpty(jToken["error_response"]["error_msg"].ToString()))
+                    {
+                        throw new Exception(jToken["error_response"]["error_msg"].ToString());
+                    }
+                    else if (!string.IsNullOrEmpty(jToken["error_response"]["sub_msg"].ToString()))
+                    {
+                        throw new Exception(jToken["error_response"]["sub_msg"].ToString());
+                    }
+                    else
+                    {
+                        throw new Exception(jToken["error_response"].ToString());
+                    }
                 }
                 else
                 {
@@ -216,7 +228,7 @@ namespace APIOffice.Controllers.pddApi
 
         public static void setError(string Error)
         {
-            SQLHelper.ExecuteCommand1("insert into Sys_Error(msg) values ('"+Error+"')");
+            SQLHelper.ExecuteCommand1("insert into Sys_Error(msg) values ('" + Error + "')");
         }
     }
 

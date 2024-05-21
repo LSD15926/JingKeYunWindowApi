@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>商品属性</title>
+		<script src="js/v2.6.10/vue.js"></script>
+		<!-- 引入样式 -->
+		<link rel="stylesheet" href="css/elementui.css">
+		<!-- 引入组件库 -->
+		<script src="js/elementui.js"></script>
+		<style>
+			#app {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				width: 920px;
+			}
+
+			#app .main_div {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				width: 880px;
+				background: #fcfcfc;
+				border: 1px solid #eee;
+				padding-bottom: 12px;
+				padding-top: 24px;
+				padding-left: 24px;
+			}
+
+			.span_name {
+				width: 100px;
+				text-align: right;
+			}
+
+			.attr_div {
+				width: 420px;
+				height: 60px;
+			}
+
+			.goodname_div {
+				width: 100%;
+				margin-bottom: 5px;
+
+			}
+
+			.goodname_div span {
+				color: #00b7d3;
+				font-size: 16px;
+			}
+
+			.main_select {
+				margin-left: 10px;
+			}
+
+			.main_select div {
+				margin: 5px;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<div id="app">
+			<div class="main_select">
+				<div>
+					<span>已选商品数:{{AllData.length}}</span>
+					<span style="float: right;">带<svg viewBox="0 0 1024 1024" width="12px" height="12px">
+							<path
+								d="M465.066667 89.6l-104.533334 213.333333-234.666666 34.133334c-10.666667 2.133333-21.333333 
+							6.4-29.866667 14.933333l-2.133333 2.133333c-17.066667 21.333333-17.066667 53.333333 
+							4.266666 72.533334l170.666667 166.4-40.533333 234.666666c-2.133333 10.666667 
+							0 23.466667 6.4 34.133334l2.133333 2.133333c14.933333 23.466667 44.8 32 70.4 19.2l211.2-110.933333 
+							211.2 110.933333c10.666667 6.4 21.333333 6.4 34.133333 6.4h4.266667c27.733333-6.4 44.8-32 40.533333-61.866667l-40.533333-234.666666 
+							170.666667-166.4c8.533333-8.533333 12.8-19.2 14.933333-29.866667v-4.266667c2.133333-27.733333-17.066667-53.333333-44.8-57.6l-234.666667-34.133333-104.533333-213.333333c-14.933333-8.533333-23.466667-17.066667-34.133333-23.466667-25.6-12.8-57.6-2.133333-70.4 25.6z"
+								fill="#ff6a00">
+							</path>
+						</svg>为重要属性</span>
+
+				</div>
+				<div>
+					<span>批量修改属性</span>
+					<el-select v-model="AttrName" @change="AttrChange" clearable placeholder="请选择"><el-option
+							v-for="item in Attrs" :key="item.ref_pid" :label="item.name"
+							:value="item.ref_pid"></el-option></el-select>
+					<el-select v-if="OneK" v-model="AttrValue" clearable placeholder="请选择"><el-option
+							v-for="item in AttrsDetail" :key="item.vid" :label="item.value"
+							:value="item.vid"></el-option></el-select>
+
+					<el-select v-if="!OneK" multiple v-model="AttrValue" clearable placeholder="请选择"><el-option
+							v-for="item in AttrsDetail" :key="item.vid" :label="item.value"
+							:value="item.vid"></el-option></el-select>
+					<el-button @click="SelectChange" plain>执行修改</el-button>
+				</div>
+				<div>
+					<el-pagination
+					      @size-change="handleSizeChange"
+					      @current-change="handleCurrentChange"
+					      :current-page="currentPage4"
+					      :page-sizes="[5,10,20]"
+					      :page-size="10"
+					      layout="total, sizes, prev, pager, next, jumper"
+					      :total="total"
+						  hide-on-single-page
+						  background
+						  >
+					    </el-pagination>
+				</div>
+			</div>
+			<div v-for="(attr_main,index) in shownData" class="main_div">
+				<div class="goodname_div">
+					<span>{{showName[index]}}</span>
+				</div>
+				<div v-for="(attr,index1) in attr_main" v-if="isDivShow(attr,index,index1)" class="attr_div">
+					<div v-if="isSelectOne(attr)" style="display: flex;align-items: center;">
+						<span class="span_name">{{attr.name}}：</span><el-select v-model="showValue[index][index1]" clearable
+							placeholder="请选择"><el-option v-for="item in attr.values"
+								v-if="isOption(item,attr,index,index1)" :key="item.vid" :label="item.value"
+								:value="item.vid"></el-option></el-select><svg v-if="attr.is_important"
+							viewBox="0 0 1024 1024" width="12px" height="12px" style="display: block;">
+							<path
+								d="M465.066667 89.6l-104.533334 213.333333-234.666666 34.133334c-10.666667 2.133333-21.333333 
+							6.4-29.866667 14.933333l-2.133333 2.133333c-17.066667 21.333333-17.066667 53.333333 
+							4.266666 72.533334l170.666667 166.4-40.533333 234.666666c-2.133333 10.666667 
+							0 23.466667 6.4 34.133334l2.133333 2.133333c14.933333 23.466667 44.8 32 70.4 19.2l211.2-110.933333 
+							211.2 110.933333c10.666667 6.4 21.333333 6.4 34.133333 6.4h4.266667c27.733333-6.4 44.8-32 40.533333-61.866667l-40.533333-234.666666 
+							170.666667-166.4c8.533333-8.533333 12.8-19.2 14.933333-29.866667v-4.266667c2.133333-27.733333-17.066667-53.333333-44.8-57.6l-234.666667-34.133333-104.533333-213.333333c-14.933333-8.533333-23.466667-17.066667-34.133333-23.466667-25.6-12.8-57.6-2.133333-70.4 25.6z"
+								fill="#ff6a00">
+							</path>
+						</svg>
+					</div>
+					<div v-if="isSelectMore(attr)" style="display: flex;align-items: center;">
+
+						<span class="span_name">{{attr.name}}：</span>
+						<el-select multiple clearable v-model="showValue[index][index1]" placeholder="请选择"><el-option
+								v-for="item in attr.values" v-if="isOption(item,attr,index,index1)" :key="item.vid"
+								:label="item.value" :value="item.vid"></el-option></el-select>
+						<svg v-if="attr.is_important" viewBox="0 0 1024 1024" width="12px" height="12px"
+							style="display: block;">
+							<path
+								d="M465.066667 89.6l-104.533334 213.333333-234.666666 34.133334c-10.666667 2.133333-21.333333 
+							6.4-29.866667 14.933333l-2.133333 2.133333c-17.066667 21.333333-17.066667 53.333333 
+							4.266666 72.533334l170.666667 166.4-40.533333 234.666666c-2.133333 10.666667 
+							0 23.466667 6.4 34.133334l2.133333 2.133333c14.933333 23.466667 44.8 32 70.4 19.2l211.2-110.933333 
+							211.2 110.933333c10.666667 6.4 21.333333 6.4 34.133333 6.4h4.266667c27.733333-6.4 44.8-32 40.533333-61.866667l-40.533333-234.666666 
+							170.666667-166.4c8.533333-8.533333 12.8-19.2 14.933333-29.866667v-4.266667c2.133333-27.733333-17.066667-53.333333-44.8-57.6l-234.666667-34.133333-104.533333-213.333333c-14.933333-8.533333-23.466667-17.066667-34.133333-23.466667-25.6-12.8-57.6-2.133333-70.4 25.6z"
+								fill="#ff6a00">
+							</path>
+						</svg>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script>
+		const vm = new Vue({
+			el: "#app",
+			data: {
+				value: [],
+				AllData: [],
+				goodName: [],
+				Attrs: [], //所有属性
+				AttrName: '',
+				AttrsDetail: [],
+				AttrValue: '',
+				OneK: true,
+				ScorllDisabel: false,
+				total:0,
+				currentPage4:1,
+				pagesize:10,
+				shownData:[],
+				showName:[],
+				showValue:[]
+			},
+
+			mounted() {
+				boundAsync.showLoading();
+				boundAsync.getPageData().then(res => {
+					this.AllData = JSON.parse(res);
+					try{
+						for (let i = 0; i < this.AllData.length; i++) {
+							this.$set(this.value, i, [])
+						
+							for (let j = 0; j < this.AllData[i].length; j++) {
+								if (!this.Attrs.some(x => x.name == this.AllData[i][j].name))
+									this.Attrs.push(this.AllData[i][j]);
+							}
+						}
+					}
+					catch(ex)
+					{
+							console.log(ex.message)
+					}
+					this.total=this.AllData.length;
+					copyFirstNItems(this.AllData,this.shownData,this.currentPage4,this.pagesize);
+					
+				});
+				boundAsync.getGoodModel().then(res => {
+					try {
+						var obj = JSON.parse(res);
+						if (obj == null) {
+							boundAsync.hideLoading();
+							return;
+						}
+						for (let i = 0; i < obj.length; i++) {
+							this.$set(this.goodName, i, obj[i].goods_name);
+
+							for (let j = 0; j < obj[i].goods_property_list.length; j++) {
+								let k = this.AllData[i].findIndex(val => {
+									return val.ref_pid == obj[i].goods_property_list[j].ref_pid && !val.is_sale;
+								});
+								if (k != -1) {
+									if (this.AllData[i][k].choose_max_num > 1) {
+										if(this.value[i][k]==null)
+										{
+											this.$set(this.value[i], k,[]);
+										}
+										this.value[i][k].push(obj[i].goods_property_list[j].vid);
+									} else if (this.AllData[i][k].choose_max_num == 1) {
+										this.$set(this.value[i], k, obj[i].goods_property_list[j].vid);
+									} else if (this.AllData[i][k].choose_max_num == 0) {
+										this.$set(this.value[i], k, obj[i].goods_property_list[j].vvalue);
+									}
+								}
+							}
+						}
+					} catch (ex) {
+						this.$alert('获取数据出错' + ex.message, '错误', {
+							confirmButtonText: '确定'
+						});
+					} finally {
+						boundAsync.hideLoading();
+					}
+				});
+				copyFirstNItems(this.value,this.showValue,this.currentPage4,this.pagesize);
+				copyFirstNItems(this.goodName,this.showName,this.currentPage4,this.pagesize);
+			},
+			methods: {
+				
+				handleSizeChange(val) {
+					this.pagesize=val;
+					copyFirstNItems(this.AllData,this.shownData,this.currentPage4,this.pagesize);
+					copyFirstNItems(this.value,this.showValue,this.currentPage4,this.pagesize);
+					copyFirstNItems(this.goodName,this.showName,this.currentPage4,this.pagesize);
+					this.openAll();
+				  },
+				  handleCurrentChange(val) {
+					this.currentPage4=val;
+					copyFirstNItems(this.AllData,this.shownData,this.currentPage4,this.pagesize);
+					copyFirstNItems(this.value,this.showValue,this.currentPage4,this.pagesize);
+					copyFirstNItems(this.goodName,this.showName,this.currentPage4,this.pagesize);
+					this.openAll();
+				  },
+				  handleChange(val) {
+					  console.log(val);
+					},
+				isOption(item, attr, index) {
+					if (item.hasOwnProperty('parent_vids')) {
+						for (let j in attr.show_condition) {
+							//寻找下标
+							let i = this.AllData[index].findIndex(val => {
+								return val.ref_pid == attr.show_condition[j].parent_ref_pid;
+							});
+							if (this.value[index][i] === undefined)
+								continue;
+							if (item.parent_vids.includes(this.value[index][i]))
+								return true;
+						}
+						return false;
+					}
+					return true;
+				},
+				isSelectOne(attr) {
+					let isshow = false;
+					//是否使用单选框
+					if (attr.choose_max_num == 1) {
+						isshow = true;
+					}
+					return isshow;
+				},
+				isSelectMore(attr) {
+					let isshow = false;
+					//是否使用多选
+					if (attr.choose_max_num > 1) {
+						isshow = true;
+					}
+					return isshow;
+				},
+				isDivShow(attr, index, index1) {
+					//是否显示div
+					if (attr.is_sale) {
+						return false;
+					}
+					//前置是否选中
+					if (attr.hasOwnProperty('show_condition')) {
+						for (let key in attr.show_condition) {
+							//寻找下标
+							let i = this.AllData[index].findIndex(val => {
+								return val.ref_pid == attr.show_condition[key].parent_ref_pid;
+							});
+							if (this.value[index][i] !== undefined) {
+								if (!attr.show_condition[key].parent_vids.includes(this.value[index][i])) {
+									this.value[index][index1] = "";
+									return false;
+								}
+							} else {
+								this.value[index][index1] = "";
+								return false;
+							}
+						}
+					}
+					return true;
+				},
+				AttrChange(val) {
+					console.log(val);
+					let i = this.Attrs.findIndex(x => {
+						return x.ref_pid == val;
+					});
+					this.AttrValue = "";
+					this.AttrsDetail = this.Attrs[i].values;
+					this.OneK = this.Attrs[i].choose_max_num == 1;
+					//this.$set(this.AttrsDetail, 0, this.Attrs[i].values);
+				},
+				SelectChange() {
+					if (this.AttrName == '')
+						return;
+					//获取选中值 更新商品属性
+					for (var i = 0; i < this.AllData.length; i++) {
+						let index = this.AllData[i].findIndex(val => {
+							return val.ref_pid == this.AttrName;
+						});
+						if (index > -1) {
+							this.$set(this.value[i], index, this.AttrValue);
+						}
+					}
+				}
+			},
+		});
+
+		function copyFirstNItems(a,b,x,y) {
+			let begin=(x-1)*y;
+			let end=x*y;
+			if (end > a.length)
+				end = a.length;
+			b.splice(0, b.length, ...a.slice(begin, end)); // 将b数组前n项替换为a数组的前n项
+		}
+
+		function postBack() {
+			var backJson = [];
+			for (let i in vm.$data.AllData) {
+				backJson.push([]);
+				for (let j in vm.$data.AllData[i]) {
+					if (vm.$data.value[i][j] !== undefined && vm.$data.value[i][j] !== '') {
+						if (vm.$data.AllData[i][j].choose_max_num == 1 && vm.$data.AllData[i][j].values.length > 0) //单选
+						{
+							let k = vm.$data.AllData[i][j].values.findIndex(val => {
+								return val.vid == vm.$data.value[i][j];
+							});
+							if (k !== -1) {
+								let json = {
+									vid: vm.$data.AllData[i][j].values[k].vid,
+									note: null,
+									vvalue: vm.$data.AllData[i][j].values[k].value,
+									ref_pid: vm.$data.AllData[i][j].ref_pid,
+									group_id: null,
+									img_url: null,
+									punit: '',
+									spec_id: null,
+									parent_spec_id: null,
+									template_pid: null
+								}
+								backJson[i].push(json);
+							}
+						} else if (vm.$data.AllData[i][j].choose_max_num > 1 && vm.$data.AllData[i][j].values.length > 0) {
+							for (var k = 0; k < vm.$data.value[i][j].length; k++) {
+								if (k == vm.$data.AllData[i][j].choose_max_num)
+									break;
+								let jj = vm.$data.AllData[i][j].values.findIndex(val => {
+									return val.vid == vm.$data.value[i][j][k];
+								});
+								if (jj !== -1) {
+									let json = {
+										vid: vm.$data.AllData[i][j].values[jj].vid,
+										note: null,
+										vvalue: vm.$data.AllData[i][j].values[jj].value,
+										ref_pid: vm.$data.AllData[i][j].ref_pid,
+										group_id: null,
+										img_url: null,
+										punit: '',
+										spec_id: null,
+										parent_spec_id: null,
+										template_pid: null
+									}
+									backJson[i].push(json);
+								}
+							}
+						}
+					}
+
+				}
+			}
+			return backJson;
+		}
+	</script>
+</html>

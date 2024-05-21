@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<script src="js/v2.6.10/vue.js"></script>
+		<!-- 引入样式 -->
+		<link rel="stylesheet" href="css/elementui.css">
+		<!-- 引入组件库 -->
+		<script src="js/elementui.js"></script>
+		<style>
+			* {
+				padding: 0;
+				margin: 0;
+			}
+			.el-collapse-item__content
+			{
+				padding-bottom: 0px;
+			}
+			.el-collapse-item__header
+			{
+				font-size: 16px;
+			}
+			.d_coll{
+				padding-left: 15px;
+				margin-top: 10px;
+			}
+			.bg_cap_item .el-collapse-item__header{
+				background-color: rgb(250 250 250);
+			}
+			.custom-collapse .el-collapse-item__header {
+			  height: 80px;
+			}
+		</style>
+	</head>
+
+		<div id="app">
+			<div>
+				<el-pagination
+				      @size-change="handleSizeChange"
+				      @current-change="handleCurrentChange"
+				      :current-page="currentPage4"
+				      :page-sizes="[5,10,20]"
+				      :page-size="10"
+				      layout="total, sizes, prev, pager, next, jumper"
+				      :total="total"
+					  hide-on-single-page
+					  background
+					  >
+				    </el-pagination>
+			</div>
+			<div style="padding-left:30px;">
+				<el-switch
+				  v-model="isOpen"
+				  inactive-text="全部展开"
+				  @change="changeOpen">
+				</el-switch>
+			</div>
+			<div class="d_coll">
+			<el-collapse v-model="activeNames" @change="handleChange" class="custom-collapse">
+				  <el-collapse-item v-for="(attr,i) in activData"  :class="{ 'bg_cap_item': i % 2 === 1 }" :name="attr.goods_id" >
+					  <template slot="title">
+					        <el-image style="width: 50px; height: 50px" :src="attr.thumb_url" :preview-src-list="[attr.thumb_url]" fit="fill"><div slot="error"></div></el-image>
+							<span style="margin-left: 10px;">{{attr.goods_name}}</span> 
+					      </template>
+					<el-table ref="ref_tabel" :data="attr.sku_list" stripe
+						style="width: 100%;">
+						<el-table-column type="index" label="#">
+						</el-table-column>
+						<el-table-column label="预览图" width="70">
+							<template slot-scope="scope">
+								   <el-image slot="reference" style="width: 50px; height: 50px" :src="scope.row.thumb_url" :preview-src-list="[scope.row.thumb_url]" fit="fill"><div slot="error"></div></el-image>
+							</template>
+						</el-table-column>
+						<el-table-column prop="spec" label="SKU名称" width="300">
+						</el-table-column>
+						<el-table-column label="预售时间">
+							<template slot-scope="scope">
+								<div>
+									<!-- <el-input-number type="number" v-model="scope.row.sku_pre_sale_time" :min="0" :max="9999999"  placeholder="" style="width: 200px;"></el-input-number> -->
+									<el-date-picker
+									      v-model="scope.row.sku_pre_sale_time"
+									      type="date"
+										  value-format="timestamp"
+									      placeholder="选择日期"
+										  :picker-options="{
+										              disabledDate: (time) => {
+										                    return time.getTime() < Date.now() +2 * 24 * 60 * 60 * 1000 || time.getTime() > Date.now() + 29 * 24 * 60 * 60 * 1000;
+										              }
+										            }"
+										  >
+									    </el-date-picker>
+								</div>
+							</template>
+						</el-table-column>
+					</el-table>
+				  </el-collapse-item>
+			</el-collapse>
+			</div>
+		</div>
+	</body>
+
+	<script type="text/javascript">
+		const vm = new Vue({
+			el: "#app",
+			data: {
+				AllData: [],
+				activData:[],
+				total:0,
+				currentPage4:1,
+				pagesize:10,
+				activeNames: [],
+				isOpen:false
+			},
+			mounted() {
+				boundAsync.getData().then(res=>{
+					this.AllData=JSON.parse(res);
+					this.total=this.AllData.length;
+					copyFirstNItems(this.AllData,this.activData,this.currentPage4,this.pagesize);
+					//this.openAll();
+					
+				});
+			},
+			methods: {
+				handleSizeChange(val) {
+					this.pagesize=val;
+					copyFirstNItems(this.AllData,this.activData,this.currentPage4,this.pagesize);
+					//this.openAll();
+				  },
+				  handleCurrentChange(val) {
+					this.currentPage4=val;
+					copyFirstNItems(this.AllData,this.activData,this.currentPage4,this.pagesize);
+					//this.openAll();
+				  },
+				  handleChange(val) {
+					  console.log(val);
+					},
+					openAll()//默认打开所有折叠
+					{
+						for (let i in this.activData) {
+							this.$set(this.activeNames,i,this.activData[i].goods_id);
+						}
+					}
+					,closeAll()
+					{
+						for (let i in this.activData) {
+							this.$set(this.activeNames,i,'');
+						}
+					},
+					changeOpen()
+					{
+						if(this.isOpen)
+							this.openAll();
+						else
+							this.closeAll()
+					}
+			},
+		});
+		
+		function copyFirstNItems(a,b,x,y) {
+			let begin=(x-1)*y;
+			let end=x*y;
+			if (end > a.length)
+				end = a.length;
+			b.splice(0, b.length, ...a.slice(begin, end)); // 将b数组前n项替换为a数组的前n项
+		}
+		/*改变列表数据*/
+		function setData(model) {
+			let that=vm.$data;
+			that.AllData = model;
+			copyFirstNItems(that.AllData,that.activData,that.currentPage4,that.pagesize);
+		}
+		function editData(val,type)
+		{
+			 switch(type)
+			 {
+				 case 0:
+				 for(let i=0;i<vm.$data.AllData.length;i++)
+				 {
+				 	for (let var1 of vm.$data.AllData[i].sku_list) {
+				 		var1.sku_pre_sale_time=val;
+				 	}	
+				 }
+				 vm.$message({message: '修改成功',type: 'success'});
+				 break;
+				 case 1:
+					for(let i=0;i<vm.$data.AllData.length;i++)
+					{
+						var rand=getRandomIntBetween(0,vm.$data.AllData[i].sku_list.length-1);
+						for (let var1 in vm.$data.AllData[i].sku_list) {
+							if(var1==rand)
+								vm.$data.AllData[i].sku_list[var1].sku_pre_sale_time=val;
+							else
+								vm.$data.AllData[i].sku_list[var1].sku_pre_sale_time="";
+						}	
+					}
+					vm.$message({message: '修改成功',type: 'success'});
+				 break;
+				 case 2:
+					for(let i=0;i<vm.$data.AllData.length;i++)
+					{
+						var rand=getRandomIntBetween(0,vm.$data.AllData[i].sku_list.length-1);
+						for (let var1 in vm.$data.AllData[i].sku_list) {
+							if(var1!=rand)
+								vm.$data.AllData[i].sku_list[var1].sku_pre_sale_time=val;
+							else
+								vm.$data.AllData[i].sku_list[var1].sku_pre_sale_time="";
+						}	
+					}
+					vm.$message({message: '修改成功',type: 'success'});
+				 break;
+			 }
+			
+		}
+		function getRandomIntBetween(a, b) {  
+		    return Math.floor(Math.random() * (b - a + 1)) + a;  
+		}
+		function postBack() {
+			return vm.$data.AllData;
+		}
+	</script>
+</html>

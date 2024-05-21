@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CefSharp Test</title>
+</head>
+<body>
+    <button onclick="callCSharp()">Call C# Method</button>
+    <script>
+        function callCSharp() {
+            boundAsync.add("javascrip")
+			.then(function(a){
+				alert(a)
+			})
+			.catch(function(err){
+				alert(err)
+			})
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<script src="js/v2.6.10/vue.js"></script>
+		<!-- 引入样式 -->
+		<link rel="stylesheet" href="css/elementui.css">
+		<!-- 引入组件库 -->
+		<script src="js/elementui.js"></script>
+		<style>
+			* {
+				padding: 0;
+				margin: 0;
+			}
+			.LinkUrl:hover
+			{
+				color: #00b7d3;
+				text-decoration: underline;
+			}
+			.LinkUrl{
+				cursor: pointer;
+			    word-break: break-all;
+			}
+			.icon_show{
+				margin-left: 0.625rem;
+			}
+			.block  .icon_show{
+				display: none;
+			}
+			.block:hover  .icon_show{
+				display: inline-block;
+			}
+			@font-face {
+				font-family: 'MyFont';
+				src: url('css/Alibaba_PuHuiTi_2.0_75_SemiBold_75_SemiBold.ttf') format('truetype');
+			}
+			body {
+				font-family: 'MyFont', sans-serif;
+			}
+		</style>
+	</head>
+	<body>
+
+		<div id="app">
+			<el-table ref="ref_tabel" :data="tableData" stripe  :height="tableHight" @selection-change="handleSelectionChange"
+				style="width: 100%;">
+				<el-table-column type="index" label="#">
+				</el-table-column>
+				<el-table-column type="selection" width="55" >
+				</el-table-column>
+				<el-table-column label="logo" width="70">
+					<template slot-scope="scope">
+						   <el-image slot="reference" style="width: 50px; height: 50px" :src="scope.row.image_logo" :preview-src-list="[scope.row.image_logo]" fit="fill">
+							   <div slot="error"></div>
+						   </el-image>
+					</template>
+				</el-table-column>
+				<el-table-column label="店铺名称">
+					<template slot-scope="scope">
+						<div class="block">
+							<div><span>{{scope.row.mall_name}}</span></div>
+							
+						</div>
+					</template>
+				</el-table-column>
+				<el-table-column prop="mall_type" label="店铺授权" width="150">
+				</el-table-column>
+				<el-table-column  width="250"  label="授权到期时间">
+					<template slot-scope="scope">
+							<div>{{getExpire(scope.row.mall_token_expire)}}</div>
+					</template>
+				</el-table-column>
+				
+				<el-table-column label="操作" fixed="right" width="200">
+					<template slot-scope="scope">
+						<el-button @click="removeMall(scope.row)" type="danger" round size="small">删除</el-button>
+						<!-- <el-button @click="goMall(scope.row)" round size="small">店铺后台</el-button> -->
+					</template>
+				</el-table-column>
+			</el-table>
+		</div>
+	</body>
+
+	<script type="text/javascript">
+		const vm = new Vue({
+			el: "#app",
+			data: {
+				tableHight: 531,
+				tableData: []
+			},
+			mounted() {
+				let that = this;
+				that.tableHight = window.innerHeight;
+				window.addEventListener('resize', function() {
+					that.tableHight = window.innerHeight;
+				});
+				boundAsync.showOnPage();
+			},
+			methods: {
+				getExpire(dateString)
+				{
+					return toData(dateString);
+				}
+				,
+				handleSelectionChange(val)
+				{
+					boundAsync.getSelection(val);
+				},
+				removeMall(row)
+				{
+					boundAsync.removeMall(row)
+				},
+				goMall(row)
+				{
+					boundAsync.goMall(row)	
+				}
+			},
+		});
+		/*改变列表数据*/
+		function setData(model) {
+			vm.$data.tableData = model;
+		}
+
+		
+	</script>
+	<script>
+		function toData(value)
+		{
+			if(value==undefined)
+				return '';
+			value=value.replace('T',' ');
+			var data=value;
+			var reg = new RegExp( '/' , "g" );
+			if(value!='' && value != null)
+			{
+				value=value.substring(0,value.lastIndexOf("+")).replace(reg,'-');
+				//格式不对,强制转换
+				
+				if(value.length<16 && value.length>0)
+				{
+					var yyyy=value.substring(0,value.indexOf('-'));
+					var mm=value.substring(value.indexOf('-')+1,value.lastIndexOf('-'));
+					var dd=value.substring(value.lastIndexOf('-')+1);
+					var hh=data.substring(data.indexOf(" ")+1,data.indexOf(":"));
+					var ff=data.substring(data.indexOf(":")+1);
+					mm=mm.length==2?mm:'0'+mm;
+					dd=dd.length==2?dd:'0'+dd;
+					data=yyyy+'-'+mm+'-'+dd;
+				}
+				else if(value.length==0)
+				{
+					
+				}
+				else
+				{
+					data=value;
+				}
+				
+			}
+			return data;
+		}
+	</script>
+</html>

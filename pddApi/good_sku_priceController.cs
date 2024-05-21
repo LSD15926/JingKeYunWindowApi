@@ -14,39 +14,32 @@ namespace APIOffice.Controllers.pddApi
         [Route("update")]
         public string Update([FromBody] List<requsetSkuPriceModel> BodyList)
         {
-            List<BackMsg> results = new List<BackMsg>();
-            foreach (var item in BodyList)
+            List<BackMsg> results = new BackMsg[BodyList.Count].ToList();
+            Parallel.For(0, BodyList.Count, i =>
             {
                 BackMsg backMsg = new BackMsg();
-                if (item.goods_id == 0 )
-                {
-                    backMsg.Code = 1001;
-                    backMsg.Mess = "参数错误缺少参数。";
-                    results.Add(backMsg);
-                    continue;
-                }
                 //数据正常请求接口
                 Dictionary<string, string> parameters = new Dictionary<string, string>
                 {
                     { "type", "pdd.goods.sku.price.update" },
                     { "client_id", apiHelp.client_id },
-                    { "access_token", item.mall.mall_token },
+                    { "access_token", BodyList[i].mall.mall_token },
                     { "timestamp", ((DateTime.Now.ToUniversalTime().Ticks - 621355968000000000) / 10000/1000).ToString() },
                     { "data_type", "JSON" },
                     //{ "goods_id", item.goods_id.ToString() },
 
                 };
-                foreach (PropertyInfo property in item.GetType().GetProperties())
+                foreach (PropertyInfo property in BodyList[i].GetType().GetProperties())
                 {
-                    object value = property.GetValue(item);
-                    if (property.Name== "sku_price_list")
+                    object value = property.GetValue(BodyList[i]);
+                    if (property.Name == "sku_price_list")
                     {
                         var settings = new JsonSerializerSettings
                         {
                             NullValueHandling = NullValueHandling.Ignore
                         };
 
-                        value = JsonConvert.SerializeObject(item.sku_price_list, settings);
+                        value = JsonConvert.SerializeObject(BodyList[i].sku_price_list, settings);
                     }
                     if (value != null) // 检查值是否为null  
                     {
@@ -54,14 +47,14 @@ namespace APIOffice.Controllers.pddApi
                     }
                 }
                 backMsg = apiHelp.SendPddApi(parameters);
-                results.Add(backMsg);
-            }
+                results[i] = backMsg;
+            });
 
             var json = JsonConvert.SerializeObject(results);
             return json;
         }
 
-       
+
     }
 
 }

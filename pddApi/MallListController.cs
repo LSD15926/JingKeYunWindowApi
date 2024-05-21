@@ -17,11 +17,10 @@ namespace APIOffice.Controllers.pddApi
         [Route("get")]
         public string get([FromForm] int UserId)
         {
-
             BackData backData = new BackData();
             try
             {
-                DataTable dt = SQLHelper.GetDataTable1("select * from u_mall where mall_del=0 and user_id=" + UserId +" order by id desc");
+                DataTable dt = SQLHelper.GetDataTable1("select * from u_mall where mall_del=0 and user_id=" + UserId + " order by id desc");
                 List<object> list = new List<object>();
                 if (dt != null)
                 {
@@ -37,19 +36,19 @@ namespace APIOffice.Controllers.pddApi
 
                         model.mall_token = dt.Rows[i]["mall_token"].ToString();
                         model.mall_token_expire = MyConvert.ToLong(dt.Rows[i]["mall_token_expire"]);
-                        model.user_id=UserId;
+                        model.user_id = UserId;
                         model.id = MyConvert.ToInt(dt.Rows[i]["id"]);
-                        model.mall_group= dt.Rows[i]["mall_group"].ToString();
+                        model.mall_group = dt.Rows[i]["mall_group"].ToString();
                         list.Add(model);
                     }
                 }
                 backData.Code = 0;
                 backData.Data = list;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 backData.Code = 100;
-                backData.Mess=ex.Message;
+                backData.Mess = ex.Message;
             }
             var json = JsonConvert.SerializeObject(backData);
             return json;
@@ -63,8 +62,8 @@ namespace APIOffice.Controllers.pddApi
             try
             {
 
-                backData.Mess=SQLHelper.ExecuteCommand1("update u_mall set mall_del=1 where mall_id in( " + ids + " )");
-                
+                backData.Mess = SQLHelper.ExecuteCommand1("update u_mall set mall_del=1 where mall_id in( " + ids + " )");
+
                 backData.Code = 0;
             }
             catch (Exception ex)
@@ -83,17 +82,17 @@ namespace APIOffice.Controllers.pddApi
             BackMsg backData = new BackMsg();
             try
             {
-                DataTable dt = SQLHelper.GetDataTable1("select * from u_mall where user_id=" + model.user_id+ " and mall_id="+model.mall_id);
+                DataTable dt = SQLHelper.GetDataTable1("select * from u_mall where user_id=" + model.user_id + " and mall_id=" + model.mall_id);
                 if (dt.Rows.Count == 0)//不存在新增
                 {
-                    backData.Mess=SQLHelper.ExecuteCommand1(string.Format("insert into u_mall(user_id,logo,mall_desc,mall_id,mall_name,merchant_type,mall_character,mall_token,mall_token_expire) " +
-                        " values({0},'{1}','{2}',{3},'{4}',{5},{6},'{7}',{8})",model.user_id,model.logo,model.mall_desc,model.mall_id,model.mall_name,model.merchant_type,model.mall_character
-                        ,model.mall_token,model.mall_token_expire));
+                    backData.Mess = SQLHelper.ExecuteCommand1(string.Format("insert into u_mall(user_id,logo,mall_desc,mall_id,mall_name,merchant_type,mall_character,mall_token,mall_token_expire,mall_group) " +
+                        " values({0},'{1}','{2}',{3},'{4}',{5},{6},'{7}',{8},'')", model.user_id, model.logo, model.mall_desc, model.mall_id, model.mall_name, model.merchant_type, model.mall_character
+                        , model.mall_token, model.mall_token_expire));
                 }
                 else
                 {
                     backData.Mess = SQLHelper.ExecuteCommand1(string.Format("update u_mall set mall_token='{0}',mall_token_expire={1},mall_del=0,mall_name='{2}',mall_group='{5}' where user_id={3} and mall_id={4} "
-                        , model.mall_token,model.mall_token_expire,model.mall_name,model.user_id,model.mall_id,model.mall_group));
+                        , model.mall_token, model.mall_token_expire, model.mall_name, model.user_id, model.mall_id, model.mall_group));
                 }
 
                 backData.Code = 0;

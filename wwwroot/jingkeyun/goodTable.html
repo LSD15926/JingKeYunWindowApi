@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<script src="js/v2.6.10/vue.js"></script>
+		<!-- 引入样式 -->
+		<link rel="stylesheet" href="css/elementui.css">
+		<!-- 引入组件库 -->
+		<script src="js/elementui.js"></script>
+		<style>
+			* {
+				padding: 0;
+				margin: 0;
+			}
+			.LinkUrl:hover
+			{
+				color: #00b7d3;
+				text-decoration: underline;
+			}
+			.LinkUrl{
+				cursor: pointer;
+			    word-break: break-all;
+			}
+			.icon_show{
+				margin-left: 0.625rem;
+			}
+			.block  .icon_show{
+				display: none;
+			}
+			.block:hover  .icon_show{
+				display: inline-block;
+			}
+			.good_sale_change:hover{
+				text-decoration: underline;
+			}
+			.span_copy:hover{
+				cursor: pointer;
+				text-decoration: underline;
+			}
+			.span_copy{
+				width: 150px;
+			}
+			
+			
+			@font-face {
+				font-family: 'MyFont';
+				src: url('css/Alibaba_PuHuiTi_2.0_75_SemiBold_75_SemiBold.ttf') format('truetype');
+			}
+			body {
+				font-family: 'MyFont', sans-serif;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="app">
+			<el-table ref="ref_tabel" :data="tableData" stripe  :height="tableHight" @selection-change="handleSelectionChange"
+				style="width: 100%;">
+				<el-table-column type="index" label="#">
+				</el-table-column>
+				<el-table-column type="selection" width="55" >
+				</el-table-column>
+				
+				<el-table-column label="主图" width="70">
+					<template slot-scope="scope">
+						   <el-image slot="reference" style="width: 50px; height: 50px" :src="scope.row.thumb_url" :preview-src-list="[scope.row.thumb_url]" fit="fill"><div slot="error"></div></el-image>
+					</template>
+				</el-table-column>
+				<el-table-column label="商品信息">
+					<template slot-scope="scope">
+						<div class="block">
+							<div class="LinkUrl" ><span @click="Go_backstage(scope.row.goods_id)">{{scope.row.goods_name}}</span><i @click="Copy(scope.row.goods_name)" class="el-icon-document-copy icon_show"></i></div>
+							<div><span> ID：{{scope.row.goods_id}} </span><i @click="Copy(scope.row.goods_id)" style="cursor: pointer;" class="el-icon-document-copy icon_show"></i></div>
+						</div>
+					</template>
+				</el-table-column>
+				<el-table-column prop="Mallinfo.mall_name" label="所属店铺" width="200">
+				</el-table-column>
+				<el-table-column  width="100"  label="SKU数">
+					<template slot-scope="scope">
+							<div style="cursor: pointer;" >{{scope.row.sku_list.length}}</div>
+					</template>
+				</el-table-column>
+				<el-table-column prop="goods_quantity" sortable  width="150" label="库存">
+				</el-table-column>
+				<el-table-column width="100"  label="状态">
+					<template slot-scope="scope">
+							<div style="cursor: pointer;" @click="changeOnsale(scope.row)" class="good_sale_change" >{{getOnsale(scope.row.is_onsale)}}</div>
+					</template>
+				</el-table-column>
+				<el-table-column label="操作" fixed="right" width="150">
+					<template slot-scope="scope">
+						<el-button @click="handleClick(scope.row)" type="text" size="small">编辑</el-button>
+						<el-popover
+						    placement="left"
+						    width="250px"
+						    trigger="click">
+							<div style="display: flex;flex-direction: row;">
+								<el-image style="width: 100px; height: 100px" :src="qrCode" :preview-src-list="[qrCode]" fit="fill"><div slot="error"></div></el-image>
+								<div style="width: 150px;"><span class="span_copy" @click="openForm(mobileUrl)">{{mobileUrl}}</span><i @click="Copy(mobileUrl)" 
+								style="cursor: pointer;" class="el-icon-document-copy icon_show"></i></div>
+							</div>
+						    <el-button slot="reference" @click="getQrcode(scope.row)" type="text" size="small">商品链接</el-button>
+						  </el-popover>
+						
+					</template>
+				</el-table-column>
+			</el-table>
+		</div>
+	</body>
+
+	<script type="text/javascript">
+		const vm = new Vue({
+			el: "#app",
+			data: {
+				tableHight: 415,
+				tableData: [],
+				selecteRow:[],
+				qrCode:'',
+				mobileUrl:''
+				
+			},
+			mounted() {
+				let that = this;
+				that.tableHight = window.innerHeight;
+				window.addEventListener('resize', function() {
+					that.tableHight = window.innerHeight;
+				});
+			},
+			methods: {
+				handleClick(row) {
+					boundAsync.showMenuStrip(row)
+				},
+				Go_backstage(goods_id) {
+					//boundAsync.redirection(goods_id)
+				}
+				,getOnsale(is_onsale)
+				{
+					return is_onsale =="1"?"在售中":"已下架";
+				}
+				,changeOnsale(row)
+				{
+					boundAsync.saleChange(row);
+				}
+				,Copy(value)
+				{
+					boundAsync.copyMsg(value);
+					this.$message({message: '复制成功',type: 'success'});
+				},
+				handleSelectionChange(val)
+				{
+					this.selecteRow=val;
+					if(!backchange)
+						return;
+					boundAsync.getSelection(val);
+				},
+				openForm(url)
+				{
+					boundAsync.openForm(url);
+				},
+				getQrcode(row)
+				{
+					boundAsync.getQrcode(row.goods_id).then(res => {
+						this.qrCode="data:image/png;base64,"+res;
+					});
+					this.mobileUrl="https://mobile.yangkeduo.com/goods1.html?goods_id="+row.goods_id;
+				}
+				
+			},
+		});
+		/*改变列表数据*/
+		function setData(model) {
+			vm.$data.tableData = model;
+		}
+		var backchange=true;
+		/*选中区间数据*/
+		function setSelection(begin,end)
+		{
+			if(vm.$data.tableData.length>0)
+				backchange=false;
+			for(i=0;i<vm.$data.tableData.length;i++)
+			{
+				if(i<begin || i>=end)
+					flag=false;
+				else
+					flag=true;
+				if(i==vm.$data.tableData.length-1)//最后一次
+					backchange=true;
+				vm.$refs.ref_tabel.toggleRowSelection(vm.$data.tableData[i],flag)
+			}
+			
+			boundAsync.getSelection(vm.$data.selecteRow);
+		}
+	</script>
+</html>

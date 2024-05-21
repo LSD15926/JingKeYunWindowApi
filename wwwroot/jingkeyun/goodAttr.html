@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>商品属性</title>
+		<script src="js/v2.6.10/vue.js"></script>
+		<!-- 引入样式 -->
+		<link rel="stylesheet" href="css/elementui.css">
+		<!-- 引入组件库 -->
+		<script src="js/elementui.js"></script>
+		<style>
+			#app{
+				display: flex;
+			}
+			#app .attr_div {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				width: 850px;
+				background: #fcfcfc;
+				border: 1px solid #eee;
+				padding-bottom: 12px;
+				padding-top: 24px;
+				padding-left:24px ;
+			}
+			.span_name
+			{
+				width: 100px;
+				text-align: right;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="app">
+			
+			<div class="attr_div">
+				<div v-for="(attr,index) in AllData" v-if="isDivShow(attr,index)" style="width: 420px;height: 60px;">
+					<div v-if="isSelectOne(attr)" style="display: flex;align-items: center;">
+						<span class="span_name">{{attr.name}}：</span><el-select v-model="value[index]" clearable placeholder="请选择"><el-option
+								v-for="item in attr.values" v-if="isOption(item,attr)" :key="item.vid" :label="item.value"
+								:value="item.vid"></el-option></el-select><svg v-if="attr.is_important" viewBox="0 0 1024 1024" width="12px" height="12px" style="display: block;">
+							<path d="M465.066667 89.6l-104.533334 213.333333-234.666666 34.133334c-10.666667 2.133333-21.333333 
+							6.4-29.866667 14.933333l-2.133333 2.133333c-17.066667 21.333333-17.066667 53.333333 
+							4.266666 72.533334l170.666667 166.4-40.533333 234.666666c-2.133333 10.666667 
+							0 23.466667 6.4 34.133334l2.133333 2.133333c14.933333 23.466667 44.8 32 70.4 19.2l211.2-110.933333 
+							211.2 110.933333c10.666667 6.4 21.333333 6.4 34.133333 6.4h4.266667c27.733333-6.4 44.8-32 40.533333-61.866667l-40.533333-234.666666 
+							170.666667-166.4c8.533333-8.533333 12.8-19.2 14.933333-29.866667v-4.266667c2.133333-27.733333-17.066667-53.333333-44.8-57.6l-234.666667-34.133333-104.533333-213.333333c-14.933333-8.533333-23.466667-17.066667-34.133333-23.466667-25.6-12.8-57.6-2.133333-70.4 25.6z" fill="#ff6a00">
+							</path></svg>
+					</div>
+					<div v-if="isSelectMore(attr)" style="display: flex;align-items: center;">
+						<span class="span_name">{{attr.name}}：</span>
+						<el-select multiple clearable v-model="value[index]" placeholder="请选择"><el-option v-for="item in attr.values"
+								 v-if="isOption(item,attr)" :key="item.vid" :label="item.value" :value="item.vid"></el-option></el-select>
+						 <svg v-if="attr.is_important" viewBox="0 0 1024 1024" width="12px" height="12px" style="display: block;">
+							<path d="M465.066667 89.6l-104.533334 213.333333-234.666666 34.133334c-10.666667 2.133333-21.333333 
+							6.4-29.866667 14.933333l-2.133333 2.133333c-17.066667 21.333333-17.066667 53.333333 
+							4.266666 72.533334l170.666667 166.4-40.533333 234.666666c-2.133333 10.666667 
+							0 23.466667 6.4 34.133334l2.133333 2.133333c14.933333 23.466667 44.8 32 70.4 19.2l211.2-110.933333 
+							211.2 110.933333c10.666667 6.4 21.333333 6.4 34.133333 6.4h4.266667c27.733333-6.4 44.8-32 40.533333-61.866667l-40.533333-234.666666 
+							170.666667-166.4c8.533333-8.533333 12.8-19.2 14.933333-29.866667v-4.266667c2.133333-27.733333-17.066667-53.333333-44.8-57.6l-234.666667-34.133333-104.533333-213.333333c-14.933333-8.533333-23.466667-17.066667-34.133333-23.466667-25.6-12.8-57.6-2.133333-70.4 25.6z" fill="#ff6a00">
+							</path></svg>
+					</div>
+					<div v-if="isTextInput(attr)" style="display: flex;align-items: center;">
+						<span class="span_name">{{attr.name}}：</span>
+						<el-input v-if="isText(attr)" v-model="value[index]" placeholder="请输入内容" style="width: 217px;" ></el-input>
+						<el-input v-if="isNumber(attr)" type="number" v-model="value[index]" placeholder="" style="width: 217px;" ></el-input>
+						 <svg v-if="attr.is_important" viewBox="0 0 1024 1024" width="12px" height="12px" style="display: block;">
+							<path d="M465.066667 89.6l-104.533334 213.333333-234.666666 34.133334c-10.666667 2.133333-21.333333 
+							6.4-29.866667 14.933333l-2.133333 2.133333c-17.066667 21.333333-17.066667 53.333333 
+							4.266666 72.533334l170.666667 166.4-40.533333 234.666666c-2.133333 10.666667 
+							0 23.466667 6.4 34.133334l2.133333 2.133333c14.933333 23.466667 44.8 32 70.4 19.2l211.2-110.933333 
+							211.2 110.933333c10.666667 6.4 21.333333 6.4 34.133333 6.4h4.266667c27.733333-6.4 44.8-32 40.533333-61.866667l-40.533333-234.666666 
+							170.666667-166.4c8.533333-8.533333 12.8-19.2 14.933333-29.866667v-4.266667c2.133333-27.733333-17.066667-53.333333-44.8-57.6l-234.666667-34.133333-104.533333-213.333333c-14.933333-8.533333-23.466667-17.066667-34.133333-23.466667-25.6-12.8-57.6-2.133333-70.4 25.6z" fill="#ff6a00">
+							</path></svg>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script>
+		const vm = new Vue({
+			el: "#app",
+			data: {
+				value: [],
+				AllData: []
+			},
+			mounted() {
+				boundAsync.getPageData().then(res=>{
+					this.AllData=JSON.parse(res);
+				});
+				boundAsync.getChoose().then(res=>{
+					var obj=JSON.parse(res);
+					if(obj==null)
+						return;
+						
+					for (let key = 0; key < obj.length; key++) {
+						let i=this.AllData.findIndex(val=>{
+								return val.ref_pid == obj[key].ref_pid;
+							});
+						if(i!=-1)
+						{
+							if(this.AllData[i].choose_max_num>1)
+							{
+								this.value[i].push(obj[key].vid);
+							}
+							else if(this.AllData[i].choose_max_num==1)
+							{
+								this.$set(this.value,i,obj[key].vid);
+							}
+							else if(this.AllData[i].choose_max_num==0)
+							{
+								this.$set(this.value,i,obj[key].vvalue);
+							}
+						}
+					}	
+				}
+				);
+			},
+			methods: {
+				isOption(item,attr)
+				{
+					if(item.hasOwnProperty('parent_vids'))
+					{
+						for(let j in attr.show_condition)
+						{
+							//寻找下标
+							let i= this.AllData.findIndex(val=>{
+								return val.ref_pid == attr.show_condition[j].parent_ref_pid;
+							});
+							if(this.value[i]=== undefined)
+								continue;
+							if(item.parent_vids.includes(this.value[i]))
+								return true;
+						}
+						return false;
+					}
+					return true;
+				},
+				isSelectOne(attr) {
+					let isshow = false;
+					//是否使用单选框
+					if ((attr.property_value_type == 0 && attr.choose_max_num == 1)
+					||(attr.property_value_type == 1 && attr.hasOwnProperty('values') )) {
+						isshow = true;
+					}
+					return isshow;
+				},
+				isSelectMore(attr) {
+					let isshow = false;
+					//是否使用多选
+					if (attr.property_value_type == 0 && attr.choose_max_num > 1) {
+						isshow = true;
+					}
+					return isshow;
+				},
+				isTextInput(attr)
+				{
+					let isshow = false;
+					//是否输入框
+					if (attr.choose_max_num == 0) {
+						isshow = true;
+					}
+					return isshow;
+				},
+				isText(attr)
+				{
+					return attr.property_value_type==0;
+				},
+				isNumber(attr)
+				{
+					return attr.property_value_type==1;
+				},
+				isDivShow(attr,index)
+				{
+					//是否显示div
+					if (attr.is_sale) {
+						return false;
+					}
+					//前置是否选中
+					if(attr.hasOwnProperty('show_condition'))
+					{
+						for (let key in attr.show_condition) 
+						{
+							//寻找下标
+							let i= this.AllData.findIndex(val=>{
+								return val.ref_pid == attr.show_condition[key].parent_ref_pid;
+							});
+							if(this.value[i]!== undefined)
+							{
+								if(!attr.show_condition[key].parent_vids.includes(this.value[i]))
+								{
+									this.value[index]="";
+									return false;
+								}
+							}
+							else
+							{
+								this.value[index]="";
+								return false;
+							}
+							
+						}
+					}
+					return true;
+				}
+			},
+		});
+		
+		function postBack()
+		{
+			var backJson=[];
+			for (let i in vm.$data.AllData) {
+				if(vm.$data.value[i]!== undefined && vm.$data.value[i]!=='')
+				{
+					if(vm.$data.AllData[i].choose_max_num==1 && vm.$data.AllData[i].values.length>0)//单选
+					{
+						let j=vm.$data.AllData[i].values.findIndex(val=>{
+							return val.vid==vm.$data.value[i];
+						});
+						if(j!==-1)
+						{
+							let json= {
+								vid: vm.$data.AllData[i].values[j].vid,
+								note: null,
+								vvalue: vm.$data.AllData[i].values[j].value,
+								ref_pid: vm.$data.AllData[i].ref_pid,
+								group_id: null,
+								img_url: null,
+								punit: '',
+								spec_id: null,
+								parent_spec_id: null,
+								template_pid: null
+							}
+							backJson.push(json);
+						}
+					}
+					else if(vm.$data.AllData[i].choose_max_num>1 && vm.$data.AllData[i].values.length>0)
+					{
+						for (var k = 0; k < vm.$data.value[i].length; k++) {
+							if(k==vm.$data.AllData[i].choose_max_num)
+								break;
+							let j=vm.$data.AllData[i].values.findIndex(val=>{
+								return val.vid==vm.$data.value[i][k];
+							});
+							if(j!==-1)
+							{
+								let json= {
+									vid: vm.$data.AllData[i].values[j].vid,
+									note: null,
+									vvalue: vm.$data.AllData[i].values[j].value,
+									ref_pid: vm.$data.AllData[i].ref_pid,
+									group_id: null,
+									img_url: null,
+									punit: '',
+									spec_id: null,
+									parent_spec_id: null,
+									template_pid: null
+								}
+								backJson.push(json);
+							}
+						}
+					}
+					else if(vm.$data.AllData[i].choose_max_num==0)//输入框
+					{
+						let json= {
+							vid: 0,
+							note: null,
+							vvalue: vm.$data.value[i],
+							ref_pid: vm.$data.AllData[i].ref_pid,
+							group_id: null,
+							img_url: null,
+							punit: '',
+							spec_id: null,
+							parent_spec_id: null,
+							template_pid: null
+						}
+						backJson.push(json);
+					}
+				}
+			}
+			return backJson;
+		}
+	</script>
+</html>

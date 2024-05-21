@@ -9,7 +9,7 @@ namespace APIOffice.Controllers.pddApi
 {
     public class PinduoduoSignHelper
     {
-        private static string _clientSecret = "cbcd35c51ba36ce0092a559ca2a97985bd49f280"; // 替换为你的client_secret  
+        private static string _clientSecret = "95c47b5dde3c3edef669ef5eb07e9b6da1cbdb0f"; // 替换为你的client_secret  
 
         /// <summary>
         /// 生成sign
@@ -38,7 +38,7 @@ namespace APIOffice.Controllers.pddApi
             //}
 
             // 添加client_secret到首尾  
-            string stringToSign =  _clientSecret + sb.ToString() + _clientSecret;
+            string stringToSign = _clientSecret + sb.ToString() + _clientSecret;
 
             // 使用MD5加密  
             using (MD5 md5 = MD5.Create())
@@ -55,6 +55,6 @@ namespace APIOffice.Controllers.pddApi
                 return builder.ToString().ToUpper();
             }
         }
-    
+
     }
 }
